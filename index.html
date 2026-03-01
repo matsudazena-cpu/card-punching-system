@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我的紫色打卡空间</title>
+    
+    <link rel="apple-touch-icon" href="https://via.placeholder.com/180/e5daeb/b09fc8?text=A">
+    <link rel="icon" href="https://via.placeholder.com/180/e5daeb/b09fc8?text=A">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #e5daeb;
+            --text-color: #b09fc8;
+            --btn-color: #9483aa;
+            --card-bg: #ffffff;
+            --done-color: #81c784;
+            --gray-color: #f0f0f0;
+        }
+
+        body {
+            font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: #4a4a4a;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container { width: 100%; max-width: 500px; }
+
+        /* 顶部个人中心 */
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .streak-info { color: var(--btn-color); font-weight: bold; }
+
+        /* 核心打卡区 */
+        .main-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(148, 131, 170, 0.2);
+        }
+
+        .main-punch-btn {
+            background-color: var(--btn-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            width: 80%;
+        }
+
+        .sub-punch-group { display: flex; justify-content: space-around; margin-top: 10px; }
+        .sub-punch-item { font-size: 14px; color: var(--text-color); cursor: pointer; }
+
+        /* 四大分类按钮 */
+        .category-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .cat-btn {
+            background: var(--card-bg);
+            border: 2px solid transparent;
+            padding: 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cat-btn:active { transform: scale(0.95); border-color: var(--btn-color); }
+
+        /* 详细项目列表 */
+        .detail-list {
+            background: white;
+            border-radius: 20px;
+            padding: 10px;
+            margin-top: 10px;
+            display: none;
+            animation: fadeIn 0.4s;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .project-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid var(--gray-color);
+        }
+
+        .project-item:last-child { border-bottom: none; }
+
+        .mini-punch-btn {
+            background: var(--gray-color);
+            border: none;
+            padding: 5px 15px;
+            border-radius: 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .mini-punch-btn.active { background: var(--done-color); color: white; }
+
+        /* 图表区 */
+        .chart-card {
+            background: white;
+            padding: 20px;
+            border-radius: 25px;
+            margin-top: 20px;
+        }
+
+        h3 { color: var(--btn-color); font-size: 16px; margin-bottom: 15px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="user-header">
+        <div style="display: flex; align-items: center;">
+            <div style="width: 40px; height: 40px; background: var(--bg-color); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px;">A</div>
+            <span style="font-weight: bold;">我的打卡空间</span>
+        </div>
+        <div class="streak-info">已坚持 <span id="streakNum">0</span> 天</div>
+    </div>
+
+    <div class="main-card">
+        <button class="main-punch-btn" onclick="mainPunch()">✨ 今日打卡</button>
+        <div class="sub-punch-group">
+            <div class="sub-punch-item" id="btn-up" onclick="toggleStatus('btn-up', '☀️签到(早起)')">☀️ 签到</div>
+            <div class="sub-punch-item" id="btn-sleep" onclick="toggleStatus('btn-sleep', '🌙签退(早睡)')">🌙 签退</div>
+        </div>
+        <div id="timestamp" style="font-size: 10px; color: #ccc; margin-top: 15px;"></div>
+    </div>
+
+    <div class="category-grid">
+        <div class="cat-btn" onclick="showDetail('study')">🩵 学业</div>
+        <div class="cat-btn" onclick="showDetail('health')">💚 身体健康</div>
+        <div class="cat-btn" onclick="showDetail('skill')">💜 技能兴趣</div>
+        <div class="cat-btn" onclick="showDetail('life')">🩷 生活心态</div>
+    </div>
+
+    <div id="detailContainer" class="detail-list">
+        </div>
+
+    <div class="chart-card">
+        <h3>📊 本月打卡分布统计</h3>
+        <canvas id="myChart"></canvas>
+    </div>
+</div>
+
+<script>
+    // 数据配置
+    const projects = {
+        study: [
+            { id: 's1', name: '背单词：背六级单词' },
+            { id: 's2', name: '六级真题：阅读听力/写翻' },
+            { id: 's3', name: '专业课复习：复习做题' }
+        ],
+        health: [
+            { id: 'h1', name: '早起：6:20前起床' },
+            { id: 'h2', name: '早睡：23:00前上床' },
+            { id: 'h3', name: '校园跑：1.6公里' },
+            { id: 'h4', name: '饮水健康：今日无糖' }
+        ],
+        skill: [
+            { id: 'k1', name: '阅读：20 分钟' },
+            { id: 'k2', name: '写作：30 分钟' },
+            { id: 'k3', name: '新闻摘要：看新闻' },
+            { id: 'k4', name: '其它技能：点击备注' }
+        ],
+        life: [
+            { id: 'l1', name: '整理寝室：每周一次' },
+            { id: 'l2', name: '写日记：心情记录' }
+        ]
+    };
+
+    // 初始化显示
+    let streak = localStorage.getItem('streak') || 0;
+    document.getElementById('streakNum').innerText = streak;
+
+    function mainPunch() {
+        const now = new Date();
+        document.getElementById('timestamp').innerText = "已记录服务器时间: " + now.toLocaleString();
+        alert("🎉 打卡成功！");
+        streak++;
+        localStorage.setItem('streak', streak);
+        document.getElementById('streakNum').innerText = streak;
+    }
+
+    function toggleStatus(id, text) {
+        const el = document.getElementById(id);
+        el.innerText = "✅ " + text;
+        el.style.color = "#81c784";
+    }
+
+    function showDetail(cat) {
+        const container = document.getElementById('detailContainer');
+        container.style.display = 'block';
+        let html = `<h3>${cat.toUpperCase()} 详细项目</h3>`;
+        projects[cat].forEach(p => {
+            html += `
+                <div class="project-item">
+                    <span>${p.name}</span>
+                    <button class="mini-punch-btn" id="${p.id}" onclick="miniPunch('${p.id}')">打卡</button>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function miniPunch(id) {
+        const btn = document.getElementById(id);
+        btn.classList.add('active');
+        btn.innerText = "完成";
+    }
+
+    // 图表初始化
+    const ctx = document.getElementById('myChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['学业', '健康', '技能', '生活'],
+            datasets: [{
+                data: [30, 25, 20, 25],
+                backgroundColor: ['#b09fc8', '#9483aa', '#e5daeb', '#81c784']
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+</script>
+
+</body>
+</html>
