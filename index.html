@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我的紫色打卡空间</title>
+    <style>
+        :root {
+            --bg-color: #f3f0f7;
+            --text-color: #4a4a4a;
+            --btn-color: #9483aa;
+            --card-bg: #ffffff;
+            --done-color: #81c784;
+            --accent-purple: #b09fc8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            background-color: var(--accent-purple);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 26px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(176, 159, 200, 0.3);
+        }
+
+        .card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h2 { margin: 10px 0; font-size: 22px; }
+        p { color: #888; font-size: 14px; margin-bottom: 25px; }
+
+        .punch-btn {
+            background-color: var(--btn-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(148, 131, 170, 0.4);
+        }
+
+        .punch-btn.done { background-color: var(--done-color); box-shadow: none; }
+
+        .stats-container {
+            width: 100%;
+            max-width: 400px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .stat-number { font-size: 20px; font-weight: bold; color: var(--btn-color); }
+        .stat-label { font-size: 12px; color: #aaa; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div style="font-size: 20px; font-weight: bold;">每日打卡</div>
+        <div class="avatar">A</div>
+    </div>
+
+    <div class="card">
+        <h2>坚持就是胜利</h2>
+        <p>今天也要充满活力地完成目标哦！</p>
+        <button id="punchBtn" class="punch-btn" onclick="handlePunch()">☀️ 立即签到</button>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-box">
+            <div class="stat-number" id="streakDays">0</div>
+            <div class="stat-label">连续天数</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="totalDays">0</div>
+            <div class="stat-label">累计签到</div>
+        </div>
+    </div>
+
+    <script>
+        let total = localStorage.getItem('totalPunch') || 0;
+        document.getElementById('totalDays').innerText = total;
+
+        function handlePunch() {
+            const btn = document.getElementById('punchBtn');
+            if(!btn.classList.contains('done')) {
+                btn.innerText = "✅ 已打卡";
+                btn.classList.add('done');
+                total++;
+                localStorage.setItem('totalPunch', total);
+                document.getElementById('totalDays').innerText = total;
+                document.getElementById('streakDays').innerText = 1;
+            }
+        }
+    </script>
+</body>
+</html>
