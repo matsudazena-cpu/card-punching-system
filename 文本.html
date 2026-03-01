@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的紫色打卡空间</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #e5daeb;
+            --text-color: #b09fc8;
+            --btn-color: #9483aa;
+            --card-bg: #ffffff;
+            --done-color: #81c784;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container { width: 100%; max-width: 450px; }
+
+        /* 顶部核心打卡 */
+        .header-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(180, 160, 200, 0.2);
+            margin-bottom: 20px;
+        }
+
+        h2 { font-size: 1.2rem; color: var(--btn-color); margin-bottom: 15px; }
+
+        .main-btn-group {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+
+        .btn-check {
+            background-color: var(--btn-color);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            flex: 1;
+            transition: all 0.3s;
+        }
+
+        .btn-check:active { transform: translateY(2px); opacity: 0.9; }
+
+        /* 四大分类按钮 */
+        .category-container { display: flex; flex-direction: column; gap: 10px; }
+
+        .cat-btn {
+            background: var(--card-bg);
+            border: none;
+            padding: 15px 20px;
+            border-radius: 15px;
+            text-align: left;
+            font-size: 1rem;
+            color: var(--btn-color);
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .sub-panel {
+            display: none;
+            background: rgba(255, 255, 255, 0.6);
+            margin-top: -5px;
+            padding: 15px;
+            border-radius: 0 0 15px 15px;
+            margin-bottom: 10px;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            border-bottom: 1px dashed var(--text-color);
+            padding-bottom: 8px;
+        }
+
+        .item-desc { font-size: 0.75rem; color: #888; display: block; }
+
+        .btn-small {
+            background: var(--btn-color);
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .btn-small.done { background: var(--done-color); }
+
+        /* 个人中心 */
+        .user-center {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .streak-badge {
+            background: var(--bg-color);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .streak-num { font-size: 2rem; font-weight: bold; color: var(--btn-color); }
+
+        canvas { margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-card">
+        <h2>✨ 今日打卡</h2>
+        <div class="main-btn-group">
+            <button class="btn-check" onclick="logAction('☀️ 签到(早起)')">☀️ 签到(早起)</button>
+            <button class="btn-check" onclick="logAction('🌙 签退(早睡)')">🌙 签退(早睡)</button>
+        </div>
+        <p id="time-display" style="font-size: 0.8rem; margin-top: 10px; opacity: 0.7;">点击记录当前时间戳</p>
+    </div>
+
+    <div class="category-container">
+        <button class="cat-btn" onclick="toggle('cat-study')">🩵 学业 <span>▼</span></button>
+        <div id="cat-study" class="sub-panel">
+            <div class="item-row">
+                <div>背单词<span class="item-desc">背六级单词</span></div>
+                <button class="btn-small" onclick="subCheck(this, '背单词')">打卡</button>
+            </div>
+            <div class="item-row">
+                <div>六级真题<span class="item-desc">阅读+听力/写作+翻译</span></div>
+                <button class="btn-small" onclick="subCheck(this, '六级真题')">打卡</button>
+            </div>
+            <div class="item-row">
+                <div>专业课复习<span class="item-desc">复习、做题、整理</span></div>
+                <button class="btn-small" onclick="subCheck(this, '专业课复习')">打卡</button>
+            </div>
+        </div>
+
+        <button class="cat-btn" onclick="toggle('cat-health')">💚 身体健康 <span>▼</span></button>
+        <div id="cat-health" class="sub-panel">
+            <div class="item-row"><div>早起 (6:20前)</div><button class="btn-small" onclick="subCheck(this, '早起健康')">打卡</button></div>
+            <div class="item-row"><div>早睡 (23:00前)</div><button class="btn-small" onclick="subCheck(this, '早睡健康')">打卡</button></div>
+            <div class="item-row"><div>校园跑 (1.6km)</div><button class="btn-small" onclick="subCheck(this, '校园跑')">打卡</button></div>
+            <div class="item-row"><div>饮水健康 (无奶茶)</div><button class="btn-small" onclick="subCheck(this, '控糖')">打卡</button></div>
+        </div>
+
+        <button class="cat-btn" onclick="toggle('cat-skill')">💜 技能兴趣 <span>▼</span></button>
+        <div id="cat-skill" class="sub-panel">
+            <div class="item-row"><div>阅读 (20min)</div><button class="btn-small" onclick="subCheck(this, '阅读')">打卡</button></div>
+            <div class="item-row"><div>写作 (30min)</div><button class="btn-small" onclick="subCheck(this, '写作')">打卡</button></div>
+            <div class="item-row"><div>新闻摘要</div><button class="btn-small" onclick="subCheck(this, '新闻')">打卡</button></div>
+            <div class="item-row"><input type="text" placeholder="其它技能备注..." style="width:70%; border:none; border-bottom:1px solid #ccc;"><button class="btn-small" onclick="subCheck(this, '自定义技能')">打卡</button></div>
+        </div>
+
+        <button class="cat-btn" onclick="toggle('cat-life')">🩷 生活心态 <span>▼</span></button>
+        <div id="cat-life" class="sub-panel">
+            <div class="item-row"><div>整理寝室 (地面)</div><button class="btn-small" onclick="subCheck(this, '整理')">打卡</button></div>
+            <div class="item-row"><div>写日记 (心情日程)</div><button class="btn-small" onclick="subCheck(this, '日记')">打卡</button></div>
+        </div>
+    </div>
+
+    <div class="user-center">
+        <div class="streak-badge">
+            <div style="font-size: 0.9rem;">已连续坚持</div>
+            <div class="streak-num" id="streak-count">0</div>
+            <div style="font-size: 0.8rem;">DAYS</div>
+        </div>
+        
+        <h3>📊 统计记录</h3>
+        <canvas id="statChart"></canvas>
+        <div id="history-log" style="font-size: 0.75rem; margin-top: 15px; color: #999;"></div>
+    </div>
+</div>
+
+<script>
+    // 数据持久化初始化
+    let db = JSON.parse(localStorage.getItem('my_checkin_data')) || { logs: [], streak: 0, lastDate: null };
+
+    // 页面加载显示
+    window.onload = () => {
+        refreshUI();
+        initChart();
+    };
+
+    // 折叠功能
+    function toggle(id) {
+        const panel = document.getElementById(id);
+        panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+    }
+
+    // 核心打卡逻辑
+    function logAction(type) {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString();
+        const dateStr = now.toLocaleDateString();
+        
+        db.logs.push({ date: dateStr, time: timeStr, item: type });
+        updateStreak(dateStr);
+        saveAndRefresh();
+        document.getElementById('time-display').innerText = `最后记录: ${timeStr} (${type})`;
+    }
+
+    // 细项打卡逻辑
+    function subCheck(btn, itemName) {
+        if(btn.classList.contains('done')) return;
+        btn.classList.add('done');
+        btn.innerText = "完成";
+        
+        logAction(itemName);
+    }
+
+    // 更新连续天数
+    function updateStreak(today) {
+        if (db.lastDate === today) return;
+        
+        const last = db.lastDate ? new Date(db.lastDate) : null;
+        const current = new Date(today);
+        
+        if (last && (current - last) / (1000 * 60 * 60 * 24) === 1) {
+            db.streak++;
+        } else if (!last || (current - last) / (1000 * 60 * 60 * 24) > 1) {
+            db.streak = 1;
+        }
+        db.lastDate = today;
+    }
+
+    function saveAndRefresh() {
+        localStorage.setItem('my_checkin_data', JSON.stringify(db));
+        refreshUI();
+        updateChart();
+    }
+
+    function refreshUI() {
+        document.getElementById('streak-count').innerText = db.streak;
+        const historyDiv = document.getElementById('history-log');
+        const recent = db.logs.slice(-3).reverse();
+        historyDiv.innerHTML = "最近记录：<br>" + recent.map(l => `${l.date} ${l.time} - ${l.item}`).join('<br>');
+    }
+
+    // 图表功能
+    let chart;
+    function initChart() {
+        const ctx = document.getElementById('statChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['学业', '健康', '技能', '心态'],
+                datasets: [{
+                    data: [0, 0, 0, 0],
+                    backgroundColor: ['#b09fc8', '#9483aa', '#d1c4e9', '#e5daeb'],
+                    borderWidth: 0
+                }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } } }
+        });
+        updateChart();
+    }
+
+    function updateChart() {
+        if(!chart) return;
+        // 简单模拟分类数据统计
+        const studyCount = db.logs.filter(l => ['背单词','六级真题','专业课复习'].includes(l.item)).length;
+        const healthCount = db.logs.filter(l => ['早起健康','早睡健康','校园跑','控糖'].includes(l.item)).length;
+        const skillCount = db.logs.filter(l => ['阅读','写作','新闻','自定义技能'].includes(l.item)).length;
+        const lifeCount = db.logs.filter(l => ['整理','日记'].includes(l.item)).length;
+        
+        chart.data.datasets[0].data = [studyCount, healthCount, skillCount, lifeCount];
+        chart.update();
+    }
+</script>
+</body>
+</html>
